@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import useProjectStore from '../../store/projectStore.js';
+import { exportProjectJson } from '../../api/projects.js';
 
 export default function Header({ onNewProject, onSelectProject, currentView, onGoToDashboard }) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -61,6 +62,17 @@ export default function Header({ onNewProject, onSelectProject, currentView, onG
             </div>
           )}
         </div>
+
+        {/* Export current project */}
+        {currentProject && (
+          <button
+            onClick={() => exportProjectJson(currentProject.id, currentProject.name)}
+            className="px-3 py-1.5 bg-gray-800 border border-gray-700 text-gray-400 hover:text-white text-sm rounded transition-colors"
+            title="Exporter le projet (backup JSON)"
+          >
+            ↓ Export
+          </button>
+        )}
 
         {/* New project button */}
         <button

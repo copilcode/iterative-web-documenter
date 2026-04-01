@@ -12,6 +12,7 @@ export default function App() {
 
   const loadProject = useProjectStore((state) => state.loadProject);
   const createProject = useProjectStore((state) => state.createProject);
+  const importProject = useProjectStore((state) => state.importProject);
   const isLoading = useProjectStore((state) => state.isLoading);
 
   const handleSelectProject = async (project) => {
@@ -21,6 +22,15 @@ export default function App() {
 
   const handleNewProject = async (name, description) => {
     const project = await createProject(name, description);
+    if (project) {
+      setShowNewProjectModal(false);
+      await loadProject(project.id);
+      setCurrentView('project');
+    }
+  };
+
+  const handleImportProject = async (projectData) => {
+    const project = await importProject(projectData);
     if (project) {
       setShowNewProjectModal(false);
       await loadProject(project.id);
@@ -49,6 +59,7 @@ export default function App() {
         <NewProjectModal
           onClose={() => setShowNewProjectModal(false)}
           onSubmit={handleNewProject}
+          onImport={handleImportProject}
           isLoading={isLoading}
         />
       )}

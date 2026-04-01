@@ -28,6 +28,21 @@ const useProjectStore = create((set, get) => ({
     }
   },
 
+  importProject: async (projectData) => {
+    set({ isLoading: true, error: null });
+    try {
+      const project = await api.importProject(projectData);
+      set((state) => ({
+        projects: [...state.projects, project],
+        isLoading: false,
+      }));
+      return project;
+    } catch (err) {
+      set({ error: err.message, isLoading: false });
+      return null;
+    }
+  },
+
   createProject: async (name, description) => {
     set({ isLoading: true, error: null });
     try {

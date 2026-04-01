@@ -53,3 +53,21 @@ export async function manageQuestion(projectId, questionId, action) {
   const response = await client.patch(`/projects/${projectId}/questions/${questionId}`, { action });
   return response.data.data;
 }
+
+export async function importProject(projectData) {
+  const response = await client.post('/projects/import', projectData);
+  return response.data.data;
+}
+
+export async function exportProjectJson(id, projectName) {
+  const response = await client.get(`/projects/${id}`);
+  const blob = new Blob([JSON.stringify(response.data.data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${projectName.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_backup.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}

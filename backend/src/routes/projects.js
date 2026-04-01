@@ -1,6 +1,7 @@
 'use strict';
 
 const express = require('express');
+const { v4: uuidv4 } = require('uuid');
 const { createProject, toSummary } = require('../models/project');
 const { applyTreeDiff, applyDocsDiff } = require('../models/tree');
 const { saveProject, loadProject, listProjects, deleteProject } = require('../persistence/store');
@@ -37,6 +38,40 @@ router.post('/', async (req, res) => {
     await saveProject(project);
 
     return res.status(201).json({ data: project });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// ---------------------------------------------------------------------------
+// POST /api/projects/import — restore a project from a JSON backup
+// ---------------------------------------------------------------------------
+router.post('/import', async (req, res) => {
+  try {
+    const projectData = req.body;
+
+    if (!projectData || typeof projectData !== 'object' || Array.isArray(projectData)) {
+      return res.status(400).json({ error: 'Invalid project data' });
+    }
+    if (!projectData.name || typeof projectData.name !== 'string') {
+      return res.status(400).json({ error: 'Project data must include a name' });
+    }
+
+    const now = new Date().toISOString();
+    const imported = {
+      ...projectData,
+      id: uuidv4(),
+      updatedAt: now,
+      createdAt: projectData.createdAt || now,
+      tree: projectData.tree || { nodes: [], edges: [] },
+      docs: projectData.docs || { summary: '', backlog: [], decisions: [] },
+      answers: projectData.answers || [],
+      pendingQuestions: projectData.pendingQuestions || [],
+      deferredQuestionIds: projectData.deferredQuestionIds || [],
+    };
+
+    await saveProject(imported);
+    return res.status(201).json({ data: imported });
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }
